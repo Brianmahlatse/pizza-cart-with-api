@@ -13,8 +13,11 @@ function pizzaCart() {
     paymentAmount: 0,
     message: '',
     usernameSet: false,
-    displayHistory:false,
-    featuredPizzas:[],
+    displayHistory: false,
+    featuredPizzas: [],
+    change:0,
+    paymentStatus:'',
+    cartDisplayed:false,
     init() {
       const url = 'https://pizza-api.projectcodex.net/api/pizzas';
       axios.
@@ -27,50 +30,31 @@ function pizzaCart() {
           console.error(error);
         })
 
-
-      this.setCartCode()
-      this.setUsername()
+      this.setUsername();
+      
+      
+      this.getDataFromStorage();
+    
       this.title = this.username + "'s" + ' Pizza Cart'
+      
+      
+      
       this.showCartData();
-      if(this.featuredPizzas.length===0){
-        const randomPizzaIds = this.getRandomPizzaIds(pizzas, 3);
-        for(pizzaId of randomPizzaIds){
-          this.setFeaturedPizzas(pizzaId)
-        }
-      }
-      
-      
-      
+   
     },
     getDataFromStorage() {
-      
+  
       const storedCartId = localStorage.getItem('cartId');
       const username = localStorage.getItem('username');
       if (storedCartId && username) {
         this.cartId = storedCartId;
         this.username = username;
+        this.usernameSet=true;
+
       }
     },
-    getRandomPizzaIds(pizzas, count) {
-      const shuffledPizzas = [...pizzas]; // Make a copy of the original array
-      let currentIndex = shuffledPizzas.length;
-    
-      // While there are elements to shuffle
-      while (currentIndex !== 0) {
-        // Pick a remaining element
-        const randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-    
-        // Swap with the current element
-        [shuffledPizzas[currentIndex], shuffledPizzas[randomIndex]] = [
-          shuffledPizzas[randomIndex],
-          shuffledPizzas[currentIndex],
-        ];
-      }
-    
-      // Return the first 'count' elements
-      return shuffledPizzas.slice(0, count).map((pizza) => pizza.id);
-    },
+   
+   
     setCartCode() {
       if (this.cartId === '') {
         this.getDataFromStorage();
@@ -80,14 +64,21 @@ function pizzaCart() {
       }
     },
     setUsername() {
-      this.getDataFromStorage()
-      if (this.username.length > 2) {
+      if (this.username.length > 2 ) {
         this.usernameSet = true;
-        localStorage['username'] = this.username;
+        this.createCart();
+        localStorage.setItem('usernameSet', this.usernameSet);
+        localStorage.setItem('username', this.username);
+        this.title = this.username + "'s" + ' Pizza Cart'; // Update the cart title
       } else {
-        alert('Username must have at least 3 characters');
+        this.getDataFromStorage();
+        if(!this.usernameSet){
+          alert('Username must have at least 3 characters');
+        }
+        
       }
     },
+    
     showCartData() {
       this.getCart().then(result => {
         const cartData = result.data;
@@ -110,11 +101,16 @@ function pizzaCart() {
       };
 
       axios.post(addToCartUrl, data, { headers })
-        .then(this.showCartData())
+        .then(()=>{
+          this.showCartData()
+          this.showCartData()
+        }
+          
+          )
         .catch(error => {
           alert(error)
         });
-
+    
     }
     ,
     removeFromCart(pizzaId) {
@@ -128,7 +124,10 @@ function pizzaCart() {
       };
 
       axios.post(removeToCartUrl, data, { headers })
-        .then(this.showCartData())
+        .then(()=>{
+          this.showCartData()
+          this.showCartData()
+        })
         .catch(error => {
           alert(error)
         });
@@ -158,12 +157,24 @@ function pizzaCart() {
       axios.post(payCartUrl, data, { headers })
         .then(result => {
           this.message = result.data.message
-          if (result.data.status === 'failure') {
+          this.paymentStatus=result.data.status
+          //change:0,
+    
+          if ( this.paymentStatus=== 'failure') {
+            
+            if(!parseInt (this.paymentAmount) && this.paymentAmount!==0){
+              alert('Invalid amount: '+this.paymentAmount);
+              this.paymentAmount=0;
+            }
             setTimeout(() => {
               this.message = '';
-            }, 2500)
+            }, 2500);
+            
           } else {
+            this.change= this.paymentAmount - this.cartTotal;
+            this.message=this.message+' Here is your change R'+this.priceFormat(this.change)
             setTimeout(() => {
+              this.change=0;
               this.cartPizzas = [];
               this.cartTotal = 0;
               this.paymentAmount = 0;
@@ -179,80 +190,81 @@ function pizzaCart() {
           alert(error)
         });
     },
+    displayCart(){
+      this.cartDisplayed=true;
+    },
+    closeCart(){
+      this.cartDisplayed=false;
+    },
     orderHistory() {
-  
+
       const orderHistoryUrrl = `https://pizza-api.projectcodex.net/api/pizza-cart/username/${this.username}`
       axios.get(orderHistoryUrrl).then(
         result => {
-    
-          this.historyCartsIds = result.data.filter(cart => cart.status==='paid');
+
+          this.historyCartsIds = result.data.filter(cart => cart.status === 'paid');
           this.activateDisplayHistory();
         }
       )
-        
+
+    },
+    historyPizzas(){
+      this.orderHistory() ;
+      this.orderHistory() ;
     },
     getPastOrders(CartCode) {
-     
+
       const getCartUrl = `https://pizza-api.projectcodex.net/api/pizza-cart/${CartCode}/get`;
       return axios.get(getCartUrl)
-      .then(result=>{
+        .then(result => {
+
+          this.pastOrderedPizzas.push({ 'pizzas': result.data.pizzas, 'total': result.data.total, 'cartId': result.data.id });
       
-        this.pastOrderedPizzas.push({'pizzas':result.data.pizzas,'total':result.data.total,'cartId':result.data.id});
-        //alert(this.pastOrderedPizzas.length)
-        
-      })
+        })
 
 
     },
-    activateDisplayHistory(){
-      this.displayHistory=true;
+    activateDisplayHistory() {
+      this.displayHistory = true;
+      this.cartDisplayed=true;//hide cart button
     },
-    newOrder(){
-      this.displayHistory=false;
+    newOrder() {
+      this.displayHistory = false;
+      this.cartDisplayed=false;
     },
     logout() {
-      this.cartPizzas = [];
-      this.cartTotal = 0;
-      this.paymentAmount = 0;
-      localStorage.removeItem('cartId');
-      this.createCart()
-      localStorage.removeItem('username');
-      this.username = '';
-      this.usernameSet = false;
+      if (confirm('Are you sure you want to log out?')) {
+        this.cartPizzas = [];
+        this.cartTotal = 0;
+        this.paymentAmount = 0;
+        localStorage.removeItem('cartId');
+        this.createCart()
+        localStorage.removeItem('username');
+        this.username = '';
+        this.usernameSet = false;
+        this.pastOrderedPizzas=[];
+        this.newOrder();
+        this.closeCart();
+      }
     },
     // 
-    setFeaturedPizzas(pizzaId){
-      const featuredCartUrl = 'https://pizza-api.projectcodex.net/api/pizzas/featured';
-      const data = {
-        "username" : this.username,
-	      pizza_id: pizzaId
-      };
-      const headers = {
-        'Content-Type': 'application/json'
-      };
+   
+    getFeaturedPizzas() {
 
-      axios.post(featuredCartUrl, data, { headers })
-        .then(this.showCartData())
-        .catch(error => {
-          alert(error)
-        });
-    },
-    getFeaturedPizzas(){
-
-      const getCartUrl = `https://pizza-api.projectcodex.net/api/pizzas/featured?username=avermeulen`;
+      const getCartUrl = `https://pizza-api.projectcodex.net/api/pizzas/featured?username=Brianmahlatse`;
       axios.get(getCartUrl)
-      .then(result=>{
-      
-        this.featuredPizzas=result.data.pizzas;
-  })
+        .then(result => {
+          
+          this.featuredPizzas = result.data.pizzas;
+        })
     },
     priceFormat(price) {
       return parseFloat(price.toFixed(2));
     },
     getPizzaImageSource(size) {
       return `./images/${size}-pizza.jpg`;
-  }
-  
+    }
+
 
   };
 }

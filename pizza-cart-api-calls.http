@@ -62,6 +62,8 @@ POST https://pizza-api.projectcodex.net/api/pizzas/featured
 content-type: application/json
 
 {
-	"username": "Tlhalefo",
-        "pizza_id": 8
+	"username": "Brianmahlatse",
+    "pizza_id": 21
 }
+ 
+    

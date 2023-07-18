@@ -8,6 +8,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
 
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-bkHlMvPmS/gVeW8C7vgUHr3O7rcfr29CGO2TMzPrC6oYqvhM0vuhM8g2fqT9q9ejQDFViVUGi8rLQ8vInRGS2Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="stylesheet" href="styles/login.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
@@ -48,10 +50,20 @@
     <main x-show="usernameSet" class="bg-body" x-init="getDataFromStorage()">
 
         <div class="header">
-            <h1 x-text="title"></h1>
+            <h1>Welcome to Perfect Pizza, <span x-text="username"></span>!</h1>
             <button @click="logout()" class="logout-button">Logout</button>
-            <button @click="orderHistory()" x-show="!displayHistory" class="orderHistory">Order History</button>
-            <button @click="newOrder()" x-show="displayHistory" class="newOrder">New Order</button>
+            <button @click="historyPizzas()" x-show="!displayHistory" class="orderHistory">Order History</button>
+            <button @click="newOrder()" x-show="displayHistory" class="newOrder">Order</button>
+            <button x-show="!cartDisplayed" @click="displayCart()"class="btn-cart">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
+                class="bi bi-cart cart"
+                viewBox="0 0 16 16">
+                <path
+                    d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+            </svg ><span class="items"><span class="count"x-text="cartPizzas.length"></span>items</span>
+        </button>
+            
+            
         </div>
 
         <div x-show="displayHistory">
@@ -59,7 +71,7 @@
                 <div x-init="getPastOrders(cart.cart_code)"></div>
             </template>
             <div>
-                <div class="text-center"x-show="pastOrderedPizzas.length===0">
+                <div class="text-center" x-show="pastOrderedPizzas.length===0">
                     <h1><span>You have no previous orders</span></h1>
                 </div>
                 <template x-for="pizzaOrder in pastOrderedPizzas">
@@ -115,42 +127,36 @@
         <div x-show="!displayHistory">
             <section class="">
 
-                <section class="pizza" x-init="getFeaturedPizzas()">
-                    
-                    <template x-for="pizza in featuredPizzas">
-                        
-                        <section class="small-pizza">
-
-                            <img :src="getPizzaImageSource(pizza.size)" alt="Pizza" />
-                            <div class="price">
-                                <h2><span x-text="pizza.size"> </span> Pizza</h2>
-                                <h3>R<span x-text="pizza.price"></span></h3>
-                                <h3>Flavour: <span x-text="pizza.flavour"></span></h3>
-                                <h3>Type: <span x-text="pizza.type"></span></h3>
-
-                            </div>
-                            <div class="toppings-description">
-
-                            </div>
-                            <div class="buyBtn d-flex justify-content-center mt-10">
-                                <button @click="addToCart(pizza.id)" class="w-75 buy-featured">Buy</button>
-                            </div>
-                        </section>
-                        
-                    </template>
-
-                </section>
-
-
-
                 <section class="pizza-list">
 
-                    <table x-show="cartTotal>0"
+                    <table x-show="cartDisplayed"
                         class="table table-striped table-dark table-responsive{-sm|-md|-lg|-xl}">
 
                         <thead>
+                            <tr>
+                                <th colspan="5">
+                                    
+                                    <button @click="closeCart()"class="close-button">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" 
+                                        class="bi bi-cart cart"
+                                        viewBox="0 0 16 16">
+                                        <path
+                                            d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                                    </svg ><span class="close">Close</span>
+                                </button>
+                                        
+                                
+                                </th>
+                                
+                            </tr>
                             <tr x-show="message!==''">
-                                <th class="mx-auto" colspan="5" x-text="message"></th>
+
+                                <th x-show="paymentStatus === 'failure'" class="text-center bg-danger text-white"
+                                    colspan="5" x-text="message"></th>
+                                <th x-show="paymentStatus === 'success'" class="text-center bg-success text-white"
+                                    colspan="5" x-text="message"></th>
+
+
                             </tr>
                             <tr>
                                 <th>Flavour</th>
@@ -191,7 +197,9 @@
                                 <td class="w-auto"><input placeholder="Enter numbers only" x-model="paymentAmount" />
                                 </td>
 
-                                <td @click="payPizza()" class="w-auto pay-pizza-button"><button>Pay</button></td>
+                                <td @click="payPizza()" class="w-auto pay-pizza-button">
+                                    <button>Pay</button>
+                                </td>
                             </tr>
 
                         </tbody>
@@ -199,12 +207,39 @@
 
                 </section>
 
+                <section class="pizza" x-init="getFeaturedPizzas()">
+
+                    <template x-for="pizza in featuredPizzas">
+
+                        <section class="small-pizza">
+
+                            <img :src="getPizzaImageSource(pizza.size)" alt="Pizza" />
+                            <div class="price">
+                                <h2><span x-text="pizza.size"> </span> Pizza</h2>
+                                <h3>R<span x-text="pizza.price"></span></h3>
+                                <h3>Flavour: <span x-text="pizza.flavour"></span></h3>
+                                <h3>Type: <span x-text="pizza.type"></span></h3>
+
+                            </div>
+                            <div class="toppings-description">
+
+                            </div>
+                            <div class="buyBtn d-flex justify-content-center mt-10">
+                                <button @click="addToCart(pizza.id)" class="w-75 buy-featured">Buy</button>
+                            </div>
+                        </section>
+
+                    </template>
+
+                </section>
+
+
             </section>
 
 
             <section class="pizza-gallery">
-                <template x-for="pizza in pizzas">
-                    
+                <template x-for="pizza in pizzas" x-init="setFeaturedPizzas()">
+
                     <div class="pizza-box">
                         <div class="pizzas" x-bind:class="{
                       'small-pizza': pizza.size === 'small',

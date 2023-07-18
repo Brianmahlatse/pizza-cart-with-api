@@ -208,7 +208,6 @@ body.loaded .preloader {
 
 .pizza-box {
     width: 40%;
-    min-width: 50px;
     margin: 10px;
 }
 
@@ -250,3 +249,53 @@ table, th, td {
     color: rgb(135, 206, 235);
     font-weight: bold;
  }
+ .pizza-list{
+    margin-top: 15px;
+ }
+ @media (max-width:768px) {
+
+    .pizza-box {
+        width: 300px;
+    }
+
+}
+.cart{
+    margin-left: 5px;
+}
+.btn-cart{
+  border-radius: 20px;
+  height: 2.2em;
+  background-color: rgb(22, 2, 2);
+  cursor: pointer;
+  color: rgb(135, 206, 235);
+  font-size: 1.1em;
+  font-weight: bold;
+}
+.btn-cart .items{
+    margin: 0 5px;
+}
+.btn-cart .count{
+    margin: 0 5px;
+
+
+}
+.close-button {
+    padding: 8px 16px;
+    margin: 0 auto;
+    border: none;
+    
+    height: 2.2em;
+  background-color: rgba(22, 2, 2,0.7);
+  cursor: pointer;
+  color: rgb(135, 206, 235);
+  font-size: 1.1em;
+  font-weight: bold;
+  }
+  .close-button .close{
+    margin-left: 2px;
+  }
+  
+  .close-button:hover {
+    text-decoration: underline;
+  }
+  
