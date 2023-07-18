@@ -144,7 +144,9 @@ function pizzaCart() {
     },
 
     payPizza() {
-
+      if(this.cartTotal===0){
+        return alert('Add at least one pizza to the cart');
+      }
       const payCartUrl = 'https://pizza-api.projectcodex.net/api/pizza-cart/pay';
       const data = {
         "cart_code": this.cartId,
